@@ -54,7 +54,7 @@ jobs:
 
       - name: Build devenv shell
         shell: bash
-        run: devenv shell -- true
+        run: devenv shell -v --no-tui -- true
 
       - name: Cache Rust crates
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
@@ -66,7 +66,10 @@ jobs:
         run: devenv test -v --no-tui
 
       - name: Build web
-        run: cargo build -p web --target wasm32-unknown-unknown
+        run: cargo build --web --target wasm32-unknown-unknown
+        env:
+          SERVER_HOST: 127.0.0.1
+          SERVER_PORT: 3000
 
       - name: Build server
         run: cargo build --workspace --exclude web --all-features

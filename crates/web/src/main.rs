@@ -13,7 +13,7 @@ fn main() {
 #[component]
 fn App() -> Element {
     let status = use_resource(|| async {
-        let url = format!("http://{SERVER_HOST}:{SERVER_PORT}/api/status");
+        let url = format!("http://{}:{}/api/status", SERVER_HOST, SERVER_PORT);
         Request::get(&url)
             .send()
             .await
@@ -27,7 +27,7 @@ fn App() -> Element {
         .read()
         .clone()
         .flatten()
-        .map(|s| format!("{s.service} v{s.version}"));
+        .map(|s| format!("{} v{}", s.service, s.version));
 
     rsx! {
         div {
