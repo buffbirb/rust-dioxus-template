@@ -17,7 +17,7 @@ fn require_env(name: &str) -> Option<String> {
             )
             .with(tracing_subscriber::fmt::layer())
             .init();
-        tracing::info!("{name} not set — telemetry disabled");
+        tracing::info!("{} not set — telemetry disabled", name);
         return None;
     };
     Some(v)
@@ -27,7 +27,7 @@ pub fn init() -> Option<SdkTracerProvider> {
     let endpoint = require_env("OTEL_COLLECTOR_GRPC_ENDPOINT")?;
     let service_name = require_env("OTEL_SERVICE_NAME")?;
 
-    let endpoint = format!("http://{endpoint}");
+    let endpoint = format!("http://{}", endpoint);
 
     let exporter = SpanExporter::builder()
         .with_tonic()
@@ -59,9 +59,12 @@ pub fn init() -> Option<SdkTracerProvider> {
         .with(telemetry_layer)
         .init();
 
-    let _ = global::set_tracer_provider(provider.clone());
+    global::set_tracer_provider(provider.clone());
 
-    tracing::info!("telemetry initialized, exporting to Collector at {endpoint}");
+    tracing::info!(
+        "telemetry initialized, exporting to Collector at {}",
+        endpoint
+    );
 
     Some(provider)
 }
