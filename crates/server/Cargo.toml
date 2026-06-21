@@ -1,0 +1,21 @@
+[package]
+edition = "2024"
+name = "server"
+version = "0.1.0"
+
+[dependencies]
+axum = { features = ["macros"], version = "0.8" }
+opentelemetry = { features = ["trace"], version = "0.32" }
+opentelemetry-otlp = { features = ["grpc-tonic", "trace"], version = "0.32" }
+opentelemetry_sdk = { features = ["rt-tokio", "trace"], version = "0.32" }
+serde = { workspace = true }
+tokio = { features = ["full"], version = "1" }
+tower-http = { features = ["cors"], version = "0.7.0" }
+tracing = { workspace = true }
+tracing-opentelemetry = "0.33"
+tracing-subscriber = { features = [
+  "env-filter",
+  "fmt",
+  "registry",
+], version = "0.3" }
+types = { path = "../types" }

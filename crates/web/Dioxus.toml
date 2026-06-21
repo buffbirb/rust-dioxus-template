@@ -1,0 +1,3 @@
+[web.watcher]
+reload_html = true
+watch_path = ["src"]

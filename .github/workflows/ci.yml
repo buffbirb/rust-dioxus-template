@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: CI
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    permissions:
+      contents: read
+
+    defaults:
+      run:
+        shell: devenv shell bash -- --noprofile --norc -e -o pipefail {0}
+
+    steps:
+      - name: Checkout ${{ github.repository }}
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3 # v31.10.6
+        with:
+          github_access_token: ${{ github.token }}
+
+      - name: Use Cachix
+        uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
+        with:
+          name: devenv
+
+      - name: Cache Nix store
+        uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569 # v7.0.2
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('devenv.lock', 'devenv.nix', 'devenv.yaml') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+
+      - name: Install devenv
+        shell: bash
+        run: nix profile add nixpkgs#devenv
+
+      - name: Build devenv shell
+        shell: bash
+        run: devenv shell -- true
+
+      - name: Cache Rust crates
+        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+        with:
+          cmd-format: devenv shell -- {0}
+
+      - name: Run devenv tests
+        shell: bash
+        run: devenv test -v --no-tui
+
+      - name: Build web
+        run: cargo build -p web --target wasm32-unknown-unknown
+
+      - name: Build server
+        run: cargo build --workspace --exclude web --all-features
+
+      - name: Test server
+        run: cargo test --workspace --exclude web --all-features
+
+      - name: Run clippy
+        run: cargo clippy --workspace --exclude web --all-targets --all-features -- -D warnings

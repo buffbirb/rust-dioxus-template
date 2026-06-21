@@ -1,0 +1,7 @@
+[workspace]
+members = ["crates/server", "crates/types", "crates/web"]
+resolver = "3"
+
+[workspace.dependencies]
+serde = { features = ["derive"], version = "1.0" }
+tracing = "0.1"

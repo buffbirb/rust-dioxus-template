@@ -1,0 +1,11 @@
+[package]
+edition = "2024"
+name = "web"
+version = "0.1.0"
+
+[dependencies]
+dioxus = { features = ["web"], version = "0.7.9" }
+dioxus-logger = "0.7.0"
+gloo-net = "0.7.0"
+tracing = { workspace = true }
+types = { path = "../types" }
